@@ -1,0 +1,84 @@
+<div class="cart-page">
+  <div class="cart-header">
+    <h1>🛒 Your Cart</h1>
+    <div class="header-actions">
+      <button class="btn btn-light" (click)="continueShopping()">Continue Shopping</button>
+      <div class="cart-count" title="Items in cart">{{ getCartCount() }}</div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="items$ | async as items">
+    <div class="cart-content">
+      <div *ngIf="items.length === 0" class="empty-cart">
+        <div class="empty-icon">🧾</div>
+        <h2>Your cart is empty</h2>
+        <p>Looks like you haven't added any items to your cart yet.</p>
+        <button class="btn" (click)="continueShopping()">Start Shopping</button>
+      </div>
+
+      <div *ngIf="items.length > 0" class="cart-items">
+        <div class="cart-item" *ngFor="let item of items">
+          <div class="item-image">
+            <img [src]="item.imageUrl || 'assets/images/placeholder.jpg'" [alt]="item.name" (error)="onImgError($event)" />
+          </div>
+
+          <div class="item-details">
+            <h3 class="item-name">{{ item.name }}</h3>
+            <div class="item-meta">
+              <span class="item-price">₹{{ formatPrice(item.price) }}</span>
+              <span class="item-qty-small">× {{ item.qty }}</span>
+            </div>
+          </div>
+
+          <div class="item-quantity">
+            <div class="quantity-controls">
+              <button class="qty-btn" (click)="updateQuantity(item.productId, -1)" [disabled]="item.qty <= 1">−</button>
+              <span class="quantity">{{ item.qty }}</span>
+              <button class="qty-btn" (click)="updateQuantity(item.productId, 1)">+</button>
+            </div>
+          </div>
+
+          <div class="item-total">
+            <span class="total-price">₹{{ formatPrice(item.price * item.qty) }}</span>
+          </div>
+
+          <button class="remove-btn" (click)="removeItem(item.productId)" title="Remove item">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <aside *ngIf="items.length > 0" class="cart-summary">
+      <div class="summary-header">
+        <h2>Order Summary</h2>
+      </div>
+
+      <div class="summary-details">
+        <div class="summary-row">
+          <span>Items ({{ items.length }})</span>
+          <span>₹{{ formatPrice(cartTotal) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <span>₹{{ formatPrice(deliveryFee) }}</span>
+        </div>
+
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span>₹{{ formatPrice(cartTotal + deliveryFee) }}</span>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button class="btn btn-light" (click)="clearCart()">Clear Cart</button>
+        <button class="btn primary" (click)="proceedToCheckout()">Proceed to Pay</button>
+      </div>
+      <div class="small-note">Secure payment, easy checkout — demo mode</div>
+    </aside>
+  </ng-container>
+</div>

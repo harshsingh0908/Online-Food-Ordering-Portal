@@ -1,0 +1,64 @@
+<div class="login-page">
+<div class="container" [class.active]="isSignUp">
+  <div class="form-container sign-up">
+    <form (ngSubmit)="onSignUp()" #signUpForm="ngForm" novalidate>
+      <h1>Create Account</h1>
+      <span>or use your email for registration</span>
+      
+      <input type="text" placeholder="Name" [(ngModel)]="signUpData.name" name="name" required />
+      <input type="email" placeholder="Email" [(ngModel)]="signUpData.email" name="email" required />
+      
+      <div class="pass-wrap">
+        <input [type]="showSignUpPassword ? 'text' : 'password'" placeholder="Password" [(ngModel)]="signUpData.password" name="password" required />
+        <button type="button" class="show-pass" (click)="togglePasswordSignUp()">
+          {{ showSignUpPassword ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      
+      <input type="password" placeholder="Confirm password" [(ngModel)]="signUpData.confirmPassword" name="confirmPassword" required />
+      <input type="tel" placeholder="Phone Number" [(ngModel)]="signUpData.phone" name="phone" required />
+      
+      <button type="submit">Sign Up</button>
+    </form>
+  </div>
+
+  <div class="form-container sign-in">
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
+      <h1>Sign In</h1>
+      <span>or use your email and password</span>
+      
+      <input type="email" placeholder="Email" [(ngModel)]="loginData.email" name="email" required />
+      
+      <div class="pass-wrap">
+        <input [type]="showLoginPassword ? 'text' : 'password'" placeholder="Password" [(ngModel)]="loginData.password" name="password" required />
+        <button type="button" class="show-pass" (click)="togglePasswordLogin()">
+          {{ showLoginPassword ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      
+      <label class="remember">
+        <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe"> Remember me
+      </label>
+      
+      <a href="#" (click)="onForgotPassword(); $event.preventDefault()">Forgot Your Password?</a>
+      
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+
+  <div class="toggle-container">
+    <div class="toggle">
+      <div class="toggle-panel toggle-left">
+        <h1>Welcome Back!</h1>
+        <p>Enter your personal details to use all site features</p>
+        <button class="hidden" (click)="toggleForm()">Sign In</button>
+      </div>
+      <div class="toggle-panel toggle-right">
+        <h1>Hello, Friend!</h1>
+        <p>Register with your personal details to use all site features</p>
+        <button class="hidden" (click)="toggleForm()">Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

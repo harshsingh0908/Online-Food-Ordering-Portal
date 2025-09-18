@@ -1,0 +1,41 @@
+<div class="login-page-bg">
+  <div class="login-container">
+    <h2 class="login-title">Sign In</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          placeholder="Enter your email"
+        />
+      </div>
+      <div class="form-group password-group">
+        <label for="password">Password</label>
+        <div class="password-input-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control"
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            class="toggle-password-btn"
+            (click)="togglePassword()"
+            aria-label="Show or hide password"
+            tabindex="-1"
+          >
+            <i [ngClass]="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary login-btn" [disabled]="loginForm.invalid">
+        Sign In
+      </button>
+    </form>
+  </div>
+</div>

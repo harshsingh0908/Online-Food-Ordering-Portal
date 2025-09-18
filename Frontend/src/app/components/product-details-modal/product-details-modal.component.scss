@@ -1,0 +1,171 @@
+:host {
+  /* backdrop */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,0.55);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+
+  /* container that receives origin custom properties and toggles .open */
+  .modal-container {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    pointer-events: auto;
+  }
+
+  /* the modal card */
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    width: 100%;
+    max-width: 980px;
+    border-radius: 14px;
+    padding: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 20px 50px rgba(2,6,23,0.18);
+    z-index: 1002;
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    transition: transform 260ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease;
+    opacity: 1;
+    transform-origin: center center;
+  }
+
+  /* collapsed state (before .open) — translate from click origin -> center */
+  .modal-container .modal:not(.open) {
+    transform: translate(
+      calc(var(--origin-x, 50vw) - 50vw),
+      calc(var(--origin-y, 50vh) - 50vh)
+    ) scale(0.74);
+    opacity: 0;
+  }
+
+  /* when component sets open, transition to centered */
+  .modal-container .modal.open {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #374151;
+    cursor: pointer;
+    z-index: 1010;
+  }
+
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .left-col {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+
+  .img-wrap {
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:12px;
+    background:#f8fafc;
+    border-radius:12px;
+  }
+
+  .product-image {
+    width:100%;
+    max-width:320px;
+    height:260px;
+    object-fit:cover;
+    border-radius:12px;
+    box-shadow:0 8px 30px rgba(2,6,23,0.08);
+  }
+
+  .veg-badge {
+    position:absolute;
+    top: 22px;
+    left: 22px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 6px 14px rgba(2,6,23,0.06);
+  }
+  .veg-badge.veg { background:#10b981; }
+  .veg-badge.nonveg { background:#ef4444; }
+
+  .qty-block {
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .qty-btn {
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    border:1px solid #e6e9ef;
+    background:#fff;
+    font-size:20px;
+    cursor:pointer;
+  }
+  .qty-display { min-width:28px; text-align:center; font-weight:700; }
+
+  .add-btn {
+    width:100%;
+    background:#0ea5a0;
+    color:#fff;
+    padding:10px 12px;
+    border-radius:10px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(14,165,160,0.12);
+  }
+
+  .right-col { padding: 4px 6px; }
+  .title { margin:0 0 6px; font-size:1.5rem; font-weight:800; color:#0f172a; }
+
+  .price-row { display:flex; gap:12px; align-items:center; margin-bottom:8px; }
+  .price { font-weight:900; color:#0d9488; font-size:1.35rem; }
+  .mrp { color:#9ca3af; text-decoration:line-through; }
+  .off { background:#fef3f2; color:#ef4444; padding:4px 8px; border-radius:8px; font-weight:700; }
+
+  .rating-row { display:flex; gap:8px; align-items:center; color:#f59e42; margin-bottom:8px; }
+  .desc { color:#374151; margin-bottom:10px; }
+
+  hr { border:none; border-top:1px solid #eef2f6; margin:12px 0; }
+
+  .reviews { margin-top:8px; }
+  .no-reviews { color:#64748b; font-style:italic; margin-bottom:8px; }
+  .review { background:#fff; border-radius:8px; padding:10px; margin-bottom:8px; box-shadow:0 4px 14px rgba(2,6,23,0.03); }
+  .r-head { display:flex; gap:10px; align-items:center; font-size:0.9rem; color:#374151; margin-bottom:6px; }
+  .r-comment { color:#4b5563; font-size:0.95rem; }
+
+  .review-form { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .review-form select, .review-form textarea { padding:8px; border-radius:6px; border:1px solid #e5e7eb; font-size:0.95rem; }
+  .form-actions { display:flex; gap:12px; align-items:center; margin-top:6px; }
+
+  .submit { background:#111827; color:#fff; padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+  .submit[disabled] { opacity:0.6; cursor:not-allowed; }
+  .error { color:#ef4444; font-weight:700; }
+
+  @media (max-width: 900px) {
+    .modal-grid { grid-template-columns: 1fr; }
+    .product-image { height: 200px; }
+  }
+}

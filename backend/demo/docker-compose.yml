@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: springapp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: springapp
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: springapp-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_URL: jdbc:mysql://mysql:3306/springapp
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  db_data:

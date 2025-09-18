@@ -1,0 +1,98 @@
+backdrop
+<div class="modal-backdrop" *ngIf="show" (click)="onClose()" aria-hidden="true"></div>
+
+<!-- modal container: set CSS props for origin and toggle "open" class -->
+<div
+  class="modal-container"
+  *ngIf="show"
+  [class.open]="animateToCenter"
+  [style.--origin-x.px]="origin?.x"
+  [style.--origin-y.px]="origin?.y"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Product details"
+>
+  <button class="close-btn" aria-label="Close dialog" (click)="onClose()">&times;</button>
+
+  <div class="modal" *ngIf="menuItem">
+    <div class="modal-grid">
+      <!-- left: image + qty/add -->
+      <div class="left-col">
+        <div class="img-wrap">
+          <img
+            class="product-image"
+            [src]="getImageUrlFromName(menuItem.name)"
+            [alt]="menuItem.name"
+            (error)="onImgError($event)"
+            loading="lazy"
+          />
+          <div class="veg-badge" [ngClass]="menuItem.veg ? 'veg' : 'nonveg'" [title]="menuItem.veg ? 'Vegetarian' : 'Non-veg'"></div>
+        </div>
+
+        <div class="qty-block">
+          <button class="qty-btn" (click)="decreaseQty()" aria-label="Decrease quantity">−</button>
+          <div class="qty-display">{{ cartQty || 1 }}</div>
+          <button class="qty-btn" (click)="increaseQty()" aria-label="Increase quantity">+</button>
+        </div>
+
+        <button class="add-btn" (click)="onAdd()">Add to cart</button>
+      </div>
+
+      <!-- right: details and reviews -->
+      <div class="right-col">
+        <h2 class="title">{{ menuItem.name }}</h2>
+
+        <div class="price-row">
+          <div class="price">₹{{ menuItem.price }}</div>
+          <div class="mrp" *ngIf="menuItem.mrp && menuItem.mrp > menuItem.price">₹{{ menuItem.mrp }}</div>
+          <div class="off" *ngIf="menuItem.mrp && menuItem.mrp > menuItem.price">
+            {{ (((menuItem.mrp - menuItem.price) / menuItem.mrp) * 100) | number:'1.0-0' }}% off
+          </div>
+        </div>
+
+        <div class="rating-row">
+          <span class="star">★</span>
+          <span class="avg">{{ avgRating ? (avgRating | number:'1.1-1') : '—' }}</span>
+          <span class="count">({{ reviewCount }} reviews)</span>
+        </div>
+
+        <p class="desc">{{ menuItem.description || getDefaultDescription(menuItem) }}</p>
+
+        <hr />
+
+        <section class="reviews" aria-live="polite">
+          <h4>Reviews</h4>
+
+          <div *ngIf="reviews.length === 0" class="no-reviews">No reviews yet — be the first!</div>
+
+          <div *ngFor="let r of reviews" class="review">
+            <div class="r-head">
+              <span class="r-star">★ {{ r.rating }}</span>
+              <span class="r-user">User #{{ r.user ? (r.user.id ?? (r.userId || '—')) : (r.userId || '—') }}</span>
+              <span class="r-date">{{ r.createdAt | date:'short' }}</span>
+            </div>
+            <div class="r-comment">{{ r.comment }}</div>
+          </div>
+
+          <form class="review-form" (ngSubmit)="submitReview(1)" autocomplete="off">
+            <label for="rating">Your rating</label>
+            <select id="rating" [(ngModel)]="newReview.rating" name="rating" required>
+              <option [ngValue]="null">Select</option>
+              <option *ngFor="let v of [5,4,3,2,1]" [ngValue]="v">{{ v }}</option>
+            </select>
+
+            <label for="comment">Your review</label>
+            <textarea id="comment" [(ngModel)]="newReview.comment" name="comment" rows="3" required placeholder="Share your experience"></textarea>
+
+            <div class="form-actions">
+              <button type="submit" class="submit" [disabled]="submitting || !newReview.rating || !newReview.comment">
+                {{ submitting ? 'Submitting...' : 'Submit review' }}
+              </button>
+              <span class="error" *ngIf="errorMsg">{{ errorMsg }}</span>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

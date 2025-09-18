@@ -1,0 +1,124 @@
+/* Global CSS Variables */
+:root {
+  --bg: #fff9f0;
+  --bg-alt: #fff2df;
+  --brand: #ff6a00;
+  --brand-2: #ff3d00;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --accent: #22c55e; /* veg */
+  --danger: #ef4444; /* non-veg */
+  --shadow: 0 8px 30px rgba(0,0,0,.08);
+  --radius: 16px;
+}
+
+/* Global Reset */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--text);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #ffe7c3 0%, transparent 60%),
+    radial-gradient(1000px 400px at 90% -20%, #ffd7b0 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Common Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  color: #fff;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font: 600 1rem Inter;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(255, 106, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-light {
+  background: #ffffff1a;
+  border: 1px solid #ffffff55;
+}
+
+/* Common Card Styles */
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.12);
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+
+/* Responsive Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

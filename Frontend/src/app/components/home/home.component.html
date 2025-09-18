@@ -1,0 +1,428 @@
+<!-- File: src/app/components/home/home.component.html -->
+<!-- Header -->
+<header class="header">
+  <nav class="nav">
+    <a class="logo" routerLink="/">
+      <img src="assets/images/img1.png" alt="Food Bite logo"/>
+      <h1>Food <span>Bite</span></h1>
+    </a>
+
+    <a class="link" href="#home">Home</a>
+    <a class="link" href="#popular">Popular</a>
+    <a class="link" href="#breakfast">Breakfast</a>
+    <a class="link" href="#lunch">Lunch</a>
+    <a class="link" href="#dinner">Dinner</a>
+
+    <div class="dropdown" [class.open]="categoryDropdownOpen">
+      <button class="dropdown-btn" (click)="categoryDropdownOpen = !categoryDropdownOpen">Category ▾</button>
+      <div class="dropdown-menu" role="menu">
+        <a href="#breakfast">🍳 Breakfast</a>
+        <a href="#lunch">🍲 Lunch</a>
+        <a href="#dinner">🍛 Dinner</a>
+        <a href="#snacks">🍟 Snacks</a>
+      </div>
+    </div>
+
+    <div class="account">
+      <span class="welcome">Hi, {{ getCurrentUser().name }}</span>
+      <button class="btn btn-light" (click)="logout()" title="Logout">Logout</button>
+    </div>
+
+    <button class="btn" (click)="openCart()" aria-label="Open cart">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 12.39a2 2 0 0 0 2 1.61h7.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Cart <span class="badge">{{ getCartCount() }}</span>
+    </button>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="hero-card">
+    <h2>Delicious meals, delivered fast 🍔</h2>
+    <p>Fresh, hot, and made with love. Explore 100+ dishes across cuisines.</p>
+    <div class="searchbar" role="search">
+      <input [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Search for pizza, dosa, biryani…" aria-label="Search menu" />
+      <button class="btn" (click)="applyFilters()">Search</button>
+    </div>
+  </div>
+  <div class="slider" aria-label="Featured dishes">
+    <div class="slide" [class.active]="currentSlide === 0">
+      <img src="assets/images/food1.png" alt="Featured food 1" loading="lazy"/>
+    </div>
+    <div class="slide" [class.active]="currentSlide === 1">
+      <img src="assets/images/food2.png" alt="Featured food 2" loading="lazy"/>
+    </div>
+    <div class="slide" [class.active]="currentSlide === 2">
+      <img src="assets/images/food3.png" alt="Featured food 3" loading="lazy"/>
+    </div>
+  </div>
+</section>
+
+<!-- Filters bar -->
+<div class="filters" aria-label="Filters">
+  <div class="filters-inner">
+    <div class="toggles">
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="vegOnly" (change)="onVegOnlyChange()"> Veg Only
+      </label>
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="nonVegOnly" (change)="onNonVegOnlyChange()"> Non-Veg Only
+      </label>
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="customizableOnly" (change)="applyFilters()"> Customisable
+      </label>
+    </div>
+    <div class="sort">
+      <span class="sub">Sort by</span>
+      <select [(ngModel)]="sortBy" (change)="applyFilters()" class="select" aria-label="Sort menu">
+        <option value="pop">Most popular</option>
+        <option value="priceLow">Price: Low to High</option>
+        <option value="priceHigh">Price: High to Low</option>
+        <option value="rating">Rating</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Recommendations Section -->
+<section *ngIf="recommendedMenu.length > 0" class="section" id="recommendations">
+  <h3>✨ Recommended For You</h3>
+  <div class="grid">
+    <article class="card" *ngFor="let item of recommendedMenu; trackBy: trackById" (click)="openProductModal(item, $event)">
+      <div class="thumb" tabindex="0">
+        <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+        <span [class]="item.veg ? 'veg-dot' : 'nonveg-dot'" [title]="item.veg ? 'Veg' : 'Non-Veg'"></span>
+        <span class="off" *ngIf="item.off">{{ item.off }}% OFF</span>
+      </div>
+      <div class="body">
+        <div class="title">{{ item.name }}</div>
+        <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+        <div class="rating">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+          <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+        </div>
+        <div class="priceRow">
+          <div class="prices">
+            <span class="price">₹{{ formatPrice(item.price) }}</span>
+            <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+          </div>
+          <div class="add-area">
+            <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+            <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+              <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+              <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+              <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Menu Sections -->
+<main>
+  <!-- Popular -->
+  <section id="popular" class="section">
+    <h3>🔥 Popular Near You</h3>
+    <div class="grid">
+      <article class="card" *ngFor="let item of popularMenu; trackBy: trackById" (click)="openProductModal(item)">
+        <div class="thumb" tabindex="0">
+          <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+          <span [class]="item.veg ? 'veg-dot' : 'nonveg-dot'" [title]="item.veg ? 'Veg' : 'Non-Veg'"></span>
+          <span class="off" *ngIf="item.off">{{ item.off }}% OFF</span>
+        </div>
+        <div class="body">
+          <div class="title">{{ item.name }}</div>
+          <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+          <div class="rating">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+            <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+          </div>
+          <div class="priceRow">
+            <div class="prices">
+              <span class="price">₹{{ formatPrice(item.price) }}</span>
+              <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+            </div>
+            <div class="add-area">
+              <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+              <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+                <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+                <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+                <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Breakfast -->
+  <section id="breakfast" class="section">
+    <h3>🍳 Breakfast</h3>
+    <div class="grid">
+      <article class="card" *ngFor="let item of breakfastMenu; trackBy: trackById" (click)="openProductModal(item)">
+        <div class="thumb" tabindex="0">
+          <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+        </div>
+        <div class="body">
+          <span class="title">{{ item.name }}</span>
+          <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+          <div class="rating">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+            <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+          </div>
+          <div class="priceRow">
+            <div class="prices">
+              <span class="price">₹{{ formatPrice(item.price) }}</span>
+              <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+            </div>
+            <div class="add-area">
+              <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+              <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+                <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+                <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+                <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Lunch -->
+  <section id="lunch" class="section">
+    <h3>🍲 Lunch</h3>
+    <div class="grid">
+      <article class="card" *ngFor="let item of lunchMenu; trackBy: trackById" (click)="openProductModal(item)">
+        <div class="thumb" tabindex="0">
+          <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+        </div>
+        <div class="body">
+          <span class="title">{{ item.name }}</span>
+          <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+          <div class="rating">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+            <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+          </div>
+          <div class="priceRow">
+            <div class="prices">
+              <span class="price">₹{{ formatPrice(item.price) }}</span>
+              <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+            </div>
+            <div class="add-area">
+              <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+              <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+                <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+                <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+                <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Dinner -->
+  <section id="dinner" class="section">
+    <h3>🍛 Dinner</h3>
+    <div class="grid">
+      <article class="card" *ngFor="let item of dinnerMenu; trackBy: trackById" (click)="openProductModal(item)">
+        <div class="thumb" tabindex="0">
+          <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+        </div>
+        <div class="body">
+          <span class="title">{{ item.name }}</span>
+          <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+          <div class="rating">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+            <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+          </div>
+          <div class="priceRow">
+            <div class="prices">
+              <span class="price">₹{{ formatPrice(item.price) }}</span>
+              <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+            </div>
+            <div class="add-area">
+              <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+              <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+                <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+                <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+                <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Snacks -->
+  <section id="snacks" class="section">
+    <h3>🍟 Snacks</h3>
+    <div class="grid">
+      <article class="card" *ngFor="let item of snacksMenu; trackBy: trackById" (click)="openProductModal(item)">
+        <div class="thumb" tabindex="0">
+          <img [src]="getImageUrlFromName(item.name, item.img)" [alt]="item.name || 'Product'" loading="lazy" (error)="onImgError($event)"/>
+        </div>
+        <div class="body">
+          <span class="title">{{ item.name }}</span>
+          <div class="sub">{{ item.cat }}{{ item.customizable ? ' · Customisable' : '' }}</div>
+          <div class="rating">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 .587l3.668 7.431 8.207 1.193-5.938 5.79 1.403 8.168L12 18.897l-7.34 3.872 1.403-8.168L.125 9.211l8.207-1.193z"/></svg>
+            <span>{{ (item.rating || 0) | number:'1.1-1' }}</span>
+          </div>
+          <div class="priceRow">
+            <div class="prices">
+              <span class="price">₹{{ formatPrice(item.price) }}</span>
+              <span class="old" *ngIf="item.mrp">₹{{ formatPrice(item.mrp) }}</span>
+            </div>
+            <div class="add-area">
+              <button class="add" (click)="$event.stopPropagation(); addToCart(item)" *ngIf="getQuantity(item.id.toString()) === 0">ADD +</button>
+              <div class="qty-ctrl" [class.show]="getQuantity(item.id.toString()) > 0">
+                <button class="minus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), -1)" aria-label="decrease">−</button>
+                <span class="qty">{{ getQuantity(item.id.toString()) }}</span>
+                <button class="plus" (click)="$event.stopPropagation(); updateQuantity(item.id.toString(), 1)" aria-label="increase">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<!-- Product Details Modal (single instance) -->
+<app-product-details
+  [product]="modalProduct"
+  [show]="showModal"
+  [cartQty]="getModalProductQty()"
+  (close)="closeProductModal()"
+  (add)="addModalProduct()"
+  (remove)="removeModalProduct()"
+></app-product-details>
+
+
+<!-- Cart drawer -->
+<aside class="drawer" [class.open]="cartDrawerOpen" aria-label="Cart drawer" [attr.aria-hidden]="!cartDrawerOpen">
+  <div class="drawer-header">
+    <strong>🛒 Your Cart</strong>
+    <button class="btn" (click)="closeCart()">Close</button>
+  </div>
+
+  <div class="drawer-body">
+    <p class="drawer-empty" *ngIf="getCartCount() === 0">Your cart is empty. Add some tasty dishes! 😋</p>
+
+    <div class="cart-item" *ngFor="let item of items$ | async">
+      <img
+        [src]="item.imageUrl || 'assets/images/placeholder.jpg'"
+        [alt]="item.name"
+        loading="lazy"
+        style="width:64px;height:64px;object-fit:cover;border-radius:10px"
+      />
+      <div>
+        <div style="font-weight:700">{{ item.name }}</div>
+        <div style="color:var(--muted);font-size:.9rem">
+          ₹{{ formatPrice(item.price) }} × {{ item.qty }}
+        </div>
+      </div>
+      <div class="qty">
+        <button (click)="updateQuantity(item.productId, item.qty - 1)" aria-label="decrease">−</button>
+        <span>{{ item.qty }}</span>
+        <button (click)="updateQuantity(item.productId, item.qty + 1)" aria-label="increase">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="checkout">
+    <div class="total">Total: ₹{{ formatPrice(getCartTotal()) }}</div>
+    <button class="btn">Proceed to Checkout</button>
+  </div>
+</aside>
+
+<!-- Floating Help Button -->
+<button (click)="openHelp()" class="help-btn" aria-label="Help">?</button>
+
+<!-- Help Modal -->
+<div class="help-modal" [class.show]="helpModalOpen" [attr.aria-hidden]="!helpModalOpen">
+  <div class="help-dialog">
+    <div class="help-header">
+      <strong>Need help?</strong>
+      <button (click)="closeHelp()" class="btn btn-light">Close</button>
+    </div>
+    <div class="help-body">
+      <p>Hi! I'm here to help 😊</p>
+      <ul>
+        <li>Use the filters to show Veg/Non-Veg only.</li>
+        <li>Click <b>ADD</b> on a dish and adjust quantity with <b>− / +</b>.</li>
+        <li>Open the cart from the header to review and checkout.</li>
+      </ul>
+      <p><b>Support:</b> support&#64;foodbite.example</p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-wrap">
+    <div class="footer-brand">
+      <div class="brand-row">
+        <img src="assets/images/img1.png" alt="Food Bite" />
+        <div>
+          <h4>Food <span>Bite</span></h4>
+          <p>Delicious meals, delivered fast.</p>
+        </div>
+      </div>
+      <p class="foot-copy">© {{ currentYear }} Food Bite — All rights reserved.</p>
+    </div>
+
+    <nav class="footer-col">
+      <h5>Company</h5>
+      <a routerLink="/">About us</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Contact</a>
+    </nav>
+
+    <nav class="footer-col">
+      <h5>Help</h5>
+      <a href="#">Payments</a>
+      <a href="#">Shipping</a>
+      <a href="#">FAQ</a>
+      <a href="#">Support</a>
+    </nav>
+
+    <nav class="footer-col">
+      <h5>Legal</h5>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+      <a href="#">Refund Policy</a>
+      <a href="#">Cookies</a>
+    </nav>
+
+    <div class="footer-col">
+      <h5>Stay in the loop</h5>
+      <form class="newsletter" (submit)="$event.preventDefault()">
+        <input type="email" placeholder="Your email" aria-label="Email"/>
+        <button class="btn">Subscribe</button>
+      </form>
+      <div class="social">
+        <a href="#" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm5 5a5 5 0 1 0 .001 10.001A5 5 0 0 0 12 7zm6.5-.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5z"/></svg>
+        </a>
+        <a href="#" aria-label="Twitter" title="Twitter / X">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19.7 2H16l-4 6.4L7.9 2H2l6.6 9.6L2.3 22H6l4.5-7.2L15.9 22H22l-6.9-10z"/></svg>
+        </a>
+        <a href="#" aria-label="YouTube" title="YouTube">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.8 3.5 12 3.5 12 3.5s-7.8 0-9.4.6a3 3 0 0 0-2.1 2.1A31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.6.6 9.4.6 9.4.6s7.8 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.5v-7L16 12l-6.4 3.5z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <small>Built by Harsh</small>
+  </div>
+</footer>

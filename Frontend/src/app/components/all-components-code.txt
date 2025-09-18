@@ -1,0 +1,204 @@
+# All Component Code (with Exact File Paths)
+
+---
+
+## cart/cart.component.html
+
+<div class="cart-page">
+  <div class="cart-header">
+    <h1>🛒 Your Cart</h1>
+    <div class="header-actions">
+      <button class="btn btn-light" (click)="continueShopping()">Continue Shopping</button>
+      <div class="cart-count" title="Items in cart">{{ getCartCount() }}</div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="items$ | async as items">
+    <div class="cart-content">
+      <div *ngIf="items.length === 0" class="empty-cart">
+        <div class="empty-icon">🛾</div>
+        <h2>Your cart is empty</h2>
+        <p>Looks like you haven't added any items to your cart yet.</p>
+        <button class="btn" (click)="continueShopping()">Start Shopping</button>
+      </div>
+
+      <div *ngIf="items.length > 0" class="cart-items">
+        <div class="cart-item" *ngFor="let item of items">
+          <div class="item-image">
+            <img [src]="item.imageUrl || 'assets/images/placeholder.jpg'" [alt]="item.name" (error)="onImgError($event)" />
+          </div>
+
+          <div class="item-details">
+            <h3 class="item-name">{{ item.name }}</h3>
+            <div class="item-meta">
+              <span class="item-price">₹{{ formatPrice(item.price) }}</span>
+              <span class="item-qty-small">× {{ item.qty }}</span>
+            </div>
+          </div>
+
+          <div class="item-quantity">
+            <div class="quantity-controls">
+              <button class="qty-btn" (click)="updateQuantity(item.productId, -1)" [disabled]="item.qty <= 1">−</button>
+              <span class="quantity">{{ item.qty }}</span>
+              <button class="qty-btn" (click)="updateQuantity(item.productId, 1)">+</button>
+            </div>
+          </div>
+
+          <div class="item-total">
+            <span class="total-price">₹{{ formatPrice(item.price * item.qty) }}</span>
+          </div>
+
+          <button class="remove-btn" (click)="removeItem(item.productId)" title="Remove item">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <aside *ngIf="items.length > 0" class="cart-summary">
+      <div class="summary-header">
+        <h2>Order Summary</h2>
+      </div>
+
+      <div class="summary-details">
+        <div class="summary-row">
+          <span>Items ({{ items.length }})</span>
+          <span>₹{{ formatPrice(cartTotal) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <span>₹{{ formatPrice(deliveryFee) }}</span>
+        </div>
+
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span>₹{{ formatPrice(cartTotal + deliveryFee) }}</span>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button class="btn btn-light" (click)="clearCart()">Clear Cart</button>
+        <button class="btn primary" (click)="proceedToCheckout()">Proceed to Pay</button>
+      </div>
+      <div class="small-note">Secure payment, easy checkout — demo mode</div>
+    </aside>
+  </ng-container>
+</div>
+
+---
+
+## cart/cart.component.scss
+
+.cart-page {
+  max-width: 1200px;
+  margin: 18px auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+}
+
+/* ...rest of the styles as in the file... */
+
+---
+
+## cart/cart.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { CartService, SimpleCartItem } from '../../services/cart.service';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-cart',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './cart.component.html',
+  styleUrls: ['./cart.component.scss']
+})
+export class CartComponent implements OnInit {
+  items$: Observable<SimpleCartItem[]>;
+  cartTotal = 0;
+  deliveryFee = 40;
+
+  constructor(public cartService: CartService, private router: Router) {
+    this.items$ = this.cartService.items$;
+  }
+
+  ngOnInit(): void {
+    this.items$.subscribe((items: SimpleCartItem[]) => {
+      this.cartTotal = items.reduce((sum: number, i: SimpleCartItem) => sum + i.price * i.qty, 0);
+    });
+  }
+
+  onImgError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (!img) return;
+    const filename = img.src.split('/').pop()?.split('.')[0] || '';
+    const attempts = [
+      `assets/images/${filename.replace(/-/g, '_')}.jpg`,
+      `assets/images/${filename.replace(/_/g, '-')}.jpg`,
+      `assets/images/${filename}.jpg`,
+      `assets/images/placeholder.jpg`
+    ];
+    const next = attempts.find(a => !img.src.endsWith(a));
+    img.src = next || 'assets/images/placeholder.jpg';
+  }
+
+  updateQuantity(productId: string, change: number): void {
+    // compute deterministic newQty (avoid relying on service's add/sub logic)
+    const item = this.cartService.itemsSubject.value.find(i => i.productId === productId);
+    if (!item) return;
+
+    const newQty = Math.max(1, item.qty + change);
+    if (newQty === item.qty) return;
+
+    // Update via cart service (explicit set)
+    this.cartService.updateQty(productId, newQty);
+  }
+
+  removeItem(productId: string): void {
+    this.cartService.remove(productId);
+  }
+
+  clearCart(): void {
+    this.cartService.clear();
+  }
+
+  proceedToCheckout(): void {
+    // Without a backend, simulate success
+    if (this.cartService.itemsSubject.value.length === 0) {
+      alert('Cart is empty');
+      return;
+    }
+    // Simple demo flow: confirm -> clear cart and show success
+    const confirmPay = confirm(`Proceed to pay ₹${new Intl.NumberFormat('en-IN').format(this.cartTotal + this.deliveryFee)} ? (demo)`);
+    if (confirmPay) {
+      // simulate payment success
+      alert('Payment successful (demo). Thank you!');
+      this.cartService.clear();
+      this.router.navigate(['/']);
+    }
+  }
+
+  continueShopping(): void {
+    this.router.navigate(['/']);
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('en-IN').format(Math.round(price));
+  }
+
+  getCartCount(): number {
+    return this.cartService.itemsSubject.value.reduce((total: number, item: SimpleCartItem) => total + item.qty, 0);
+  }
+}
+
+---
+
+# (The rest of the files will be appended in the same format)

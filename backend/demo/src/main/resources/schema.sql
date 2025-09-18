@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS menu_items (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    cat VARCHAR(255) NOT NULL,
+    price DOUBLE NOT NULL,
+    mrp DOUBLE NOT NULL,
+    off DOUBLE NOT NULL,
+    veg BOOLEAN NOT NULL,
+    customizable BOOLEAN NOT NULL,
+    rating DOUBLE NOT NULL,
+    pop INT NOT NULL,
+    img VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);

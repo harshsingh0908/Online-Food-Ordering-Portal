@@ -1,0 +1,107 @@
+<div class="modal-backdrop" *ngIf="show" (click)="onClose()"></div>
+
+<div class="product-modal" *ngIf="show" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <button class="modal-close" (click)="onClose()" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- Left: Image -->
+    <div class="image-section">
+      <img
+        [src]="displayImage"
+        [alt]="product?.name || 'Product image'"
+        class="main-image"
+        (error)="onImgError($event)"
+      />
+      <div class="veg-indicator" *ngIf="product">
+        <span class="veg-dot" *ngIf="product.veg"></span>
+        <span class="nonveg-dot" *ngIf="!product.veg"></span>
+      </div>
+    </div>
+
+    <!-- Right: Info -->
+    <div class="info-section">
+      <h2 class="title">{{ product?.name }}</h2>
+
+      <div class="price-row">
+        <span class="price">₹{{ product?.price }}</span>
+        <span class="mrp" *ngIf="hasDiscount">₹{{ product?.mrp }}</span>
+        <span class="discount" *ngIf="hasDiscount">{{ discountPercent }}% OFF</span>
+      </div>
+
+      <p class="desc">{{ product?.description || 'Freshly prepared and delicious.' }}</p>
+
+      <!-- Success Message -->
+      <div class="success-message" *ngIf="showSuccess">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 4L12 14.01L9 11.01" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Thank you for your review!</span>
+      </div>
+
+      <div class="reviews">
+        <h4>Customer Reviews</h4>
+        <p class="empty" *ngIf="!reviews.length">No reviews yet — be the first!</p>
+
+        <div class="reviews-list" *ngIf="reviews.length">
+          <div class="review-item" *ngFor="let review of reviews">
+            <div class="review-header">
+              <div class="stars">
+                <span *ngFor="let star of [1,2,3,4,5]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+                      [attr.fill]="star <= review.rating ? '#fbbf24' : '#e5e7eb'" 
+                      stroke="#fbbf24" stroke-width="1"/>
+                  </svg>
+                </span>
+              </div>
+              <span class="review-date">{{review.date | date:'mediumDate'}}</span>
+            </div>
+            <p class="review-text">{{review.text}}</p>
+          </div>
+        </div>
+
+        <h4 class="add-review-title">Add Your Review</h4>
+        <form (ngSubmit)="onSubmitReview()" class="review-form">
+          <div class="form-group">
+            <label>Your rating</label>
+            <div class="star-rating">
+              <span *ngFor="let star of [1,2,3,4,5]" (click)="rating = star">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+                    [attr.fill]="rating !== null && star <= rating ? '#fbbf24' : '#e5e7eb'" 
+                    stroke="#fbbf24" stroke-width="1"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Your review</label>
+            <textarea [(ngModel)]="review" name="review" placeholder="Share your experience" rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="!rating || !review.trim()">
+            Submit Review
+          </button>
+        </form>
+      </div>
+
+      <!-- Cart Controls -->
+      <div class="cart-controls">
+        <div class="qty-controls">
+          <button class="qty-btn" (click)="onDecrease()" [disabled]="cartQty === 0">−</button>
+          <span class="qty">{{ cartQty }}</span>
+          <button class="qty-btn" (click)="onIncrease()">+</button>
+        </div>
+        <button class="add-btn" (click)="onAddToCart()">
+          {{ cartQty > 0 ? 'Update Cart' : 'Add to Cart' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
